@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2005
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JinxCmd", "JinxCmd\JinxCmd.csproj", "{40F67485-3112-47D2-A539-583176A2086B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HexChain", "HexChain\HexChain.csproj", "{DFF21835-A214-4642-95AB-895566D47570}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{40F67485-3112-47D2-A539-583176A2086B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40F67485-3112-47D2-A539-583176A2086B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40F67485-3112-47D2-A539-583176A2086B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40F67485-3112-47D2-A539-583176A2086B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFF21835-A214-4642-95AB-895566D47570}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFF21835-A214-4642-95AB-895566D47570}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFF21835-A214-4642-95AB-895566D47570}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFF21835-A214-4642-95AB-895566D47570}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B7CDF337-5A39-4D9E-98A7-BD479F2B83C2}
+	EndGlobalSection
+EndGlobal

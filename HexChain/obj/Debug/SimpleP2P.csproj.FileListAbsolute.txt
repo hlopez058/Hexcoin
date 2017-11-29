@@ -1,0 +1,9 @@
+C:\Users\hlope\OneDrive\Documents\GitHub\blockchain_hexcoin\SimpleBlockChain\SimpleP2P\obj\Debug\SimpleP2P.csprojResolveAssemblyReference.cache
+C:\Users\hlope\OneDrive\Documents\GitHub\blockchain_hexcoin\SimpleBlockChain\SimpleP2P\obj\Debug\SimpleP2P.csproj.CoreCompileInputs.cache
+C:\Users\hlope\OneDrive\Documents\GitHub\blockchain_hexcoin\SimpleBlockChain\SimpleP2P\bin\Debug\SimpleP2P.exe.config
+C:\Users\hlope\OneDrive\Documents\GitHub\blockchain_hexcoin\SimpleBlockChain\SimpleP2P\bin\Debug\SimpleP2P.exe
+C:\Users\hlope\OneDrive\Documents\GitHub\blockchain_hexcoin\SimpleBlockChain\SimpleP2P\bin\Debug\SimpleP2P.pdb
+C:\Users\hlope\OneDrive\Documents\GitHub\blockchain_hexcoin\SimpleBlockChain\SimpleP2P\obj\Debug\SimpleP2P.exe
+C:\Users\hlope\OneDrive\Documents\GitHub\blockchain_hexcoin\SimpleBlockChain\SimpleP2P\obj\Debug\SimpleP2P.pdb
+C:\Users\hlope\OneDrive\Documents\GitHub\blockchain_hexcoin\SimpleBlockChain\SimpleP2P\bin\Debug\Newtonsoft.Json.dll
+C:\Users\hlope\OneDrive\Documents\GitHub\blockchain_hexcoin\SimpleBlockChain\SimpleP2P\bin\Debug\Newtonsoft.Json.xml

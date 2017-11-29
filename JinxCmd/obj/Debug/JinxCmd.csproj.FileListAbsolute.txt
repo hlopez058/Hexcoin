@@ -1,0 +1,13 @@
+C:\Users\hlope\OneDrive\Documents\GitHub\blockchain_hexcoin\SimpleBlockChain\JinxCmd\bin\Debug\JinxCmd.exe
+C:\Users\hlope\OneDrive\Documents\GitHub\blockchain_hexcoin\SimpleBlockChain\JinxCmd\bin\Debug\JinxCmd.exe.config
+C:\Users\hlope\OneDrive\Documents\GitHub\blockchain_hexcoin\SimpleBlockChain\JinxCmd\obj\Debug\JinxCmd.csprojResolveAssemblyReference.cache
+C:\Users\hlope\OneDrive\Documents\GitHub\blockchain_hexcoin\SimpleBlockChain\JinxCmd\obj\Debug\JinxCmd.csproj.CoreCompileInputs.cache
+C:\Users\hlope\OneDrive\Documents\GitHub\blockchain_hexcoin\SimpleBlockChain\JinxCmd\obj\Debug\JinxCmd.exe
+C:\Users\hlope\OneDrive\Documents\GitHub\blockchain_hexcoin\SimpleBlockChain\JinxCmd\obj\Debug\JinxCmd.pdb
+C:\Users\hlope\OneDrive\Documents\GitHub\Hexcoin\JinxCmd\bin\Debug\JinxCmd.exe.config
+C:\Users\hlope\OneDrive\Documents\GitHub\Hexcoin\JinxCmd\bin\Debug\JinxCmd.exe
+C:\Users\hlope\OneDrive\Documents\GitHub\Hexcoin\JinxCmd\bin\Debug\JinxCmd.pdb
+C:\Users\hlope\OneDrive\Documents\GitHub\Hexcoin\JinxCmd\obj\Debug\JinxCmd.csprojResolveAssemblyReference.cache
+C:\Users\hlope\OneDrive\Documents\GitHub\Hexcoin\JinxCmd\obj\Debug\JinxCmd.csproj.CoreCompileInputs.cache
+C:\Users\hlope\OneDrive\Documents\GitHub\Hexcoin\JinxCmd\obj\Debug\JinxCmd.exe
+C:\Users\hlope\OneDrive\Documents\GitHub\Hexcoin\JinxCmd\obj\Debug\JinxCmd.pdb
