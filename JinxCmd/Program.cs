@@ -11,6 +11,9 @@ namespace JinxCmd
         static void Main(string[] args)
         {
             Console.WriteLine("Started Cmdline JinxService Interface");
+            var jinxsvc = new JinxServiceClient("BasicHttpBinding_IJinxService");
+            Console.WriteLine(
+            jinxsvc.Endpoint.Address);
 
             while (true)
             {
@@ -18,7 +21,6 @@ namespace JinxCmd
                 var message = Console.ReadLine();
 
                 if (message == "") { break; }
-                var jinxsvc = new JinxServiceClient("NetTcpBinding_IJinxService");
 
                 var resp = jinxsvc.Send(message);
 

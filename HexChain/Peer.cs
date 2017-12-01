@@ -5,6 +5,8 @@ using System.ServiceModel.Description;
 
 namespace HexChain
 {
+    
+
     public class Peer
     {
         public string Id { get; private set; }

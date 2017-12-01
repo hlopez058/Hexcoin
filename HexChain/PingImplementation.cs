@@ -1,9 +1,28 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.ServiceModel;
 using System.Threading;
 
 namespace HexChain
 {
+
+    //Contract for our network. It says we can 'ping'
+    [ServiceContract(CallbackContract = typeof(IPing))]
+    public interface IPing
+    {
+        [OperationContract(IsOneWay = true)]
+        void Ping(string sender, string message);
+
+
+        [OperationContract(IsOneWay = true)]
+        void BlockBroadcast(string sender, string message);
+
+        [OperationContract(IsOneWay = true)]
+        void BlockBlast(string sender, string message);
+
+    }
+
+
     public class PingImplementation : IPing
     {
         public void BlockBlast(string sender, string message)
@@ -25,7 +44,7 @@ namespace HexChain
             }
 
             string flag;
-            Program.cqf.TryDequeue(out flag);
+            Program.JinxBufferFlag.TryDequeue(out flag);
         }
 
         public void Ping(string sender, string message)
