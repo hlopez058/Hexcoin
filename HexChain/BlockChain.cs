@@ -6,6 +6,8 @@ namespace HexChain
     public class Transaction
     {
         public string public_key;
+        public string index;
+        public string timestamp;
         public string data;
     }
 
@@ -58,7 +60,6 @@ namespace HexChain
                 this.hash = this.computeHash();
             }
 
-            //Console.WriteLine("Block mined: " + this.hash);
         }
 
         public bool validateBlock()
@@ -93,10 +94,12 @@ namespace HexChain
             var genesisTransaction =
                 new Transaction()
                 {
-                    public_key = DateTime.Now.ToString(),
+                    public_key = Program.PublicID,
+                    timestamp = DateTime.Now.ToString("o"),
+                    index = "0",
                     data = "Genesis Block"
                 };
-
+        
             var genBlock = new Block(genesisTransaction, "0");
             genBlock.hash = genBlock.computeHash();
             return genBlock;
@@ -117,7 +120,6 @@ namespace HexChain
             return newBlock;
 
         }
-
         public void addBlock(Block newBlock)
         {
             newBlock.hash = newBlock.computeHash();
@@ -131,10 +133,15 @@ namespace HexChain
 
         public void addBlock(Transaction transaction)
         {
+            transaction.index = Convert.ToString(this.chain.Count);
+
             var newBlock = new Block(transaction, 
                                     this.getLatestBlock().hash);
 
+            
             newBlock.hash = newBlock.computeHash();
+
+            Console.WriteLine("Mining :\n\t{0}", newBlock.hash);
 
             newBlock.mineBlock(this.difficulty);
 

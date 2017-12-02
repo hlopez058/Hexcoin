@@ -1,23 +1,37 @@
 ﻿using System.ServiceModel;
 using Newtonsoft.Json;
+using HexChain;
+using System;
+using System.Linq;
+
 public class JinxService : IJinxService
 {
     string IJinxService.Send(string message)
     {
-        HexChain.Program.JinxBuffer.Enqueue(message);
+        //HexChain.Program.JinxBuffer.Enqueue(message);
+
+        //build a block for the new transaction
+        var trans =
+            new Transaction()
+            {
+                public_key = HexChain.Program.PublicID,
+                timestamp = DateTime.Now.ToString("o"),
+                data = "val:" + message
+            };
+
+        var transJson = JsonConvert.SerializeObject(trans);
+        Program.HexChainBuffer.Enqueue(transJson);
+        
         return message;
     }
 
     string IJinxService.Read()
     {
-        var timeout = 500;
-        while (HexChain.Program.JinxBufferFlag.Count > 0 || timeout<0 )
+        if (HexChain.Program.HexChains.Count > 0)
         {
-            System.Threading.Thread.Sleep(10);
-            timeout--;
-        }
-        return JsonConvert.SerializeObject(
-            HexChain.Program._cb.ToArray()[0].getLatestBlock(),Formatting.Indented);
+            return JsonConvert.SerializeObject(
+                HexChain.Program.HexChains.First().getLatestBlock(), Formatting.Indented);
+        }return "";
     }
 }
 

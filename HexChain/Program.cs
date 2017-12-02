@@ -14,238 +14,265 @@ namespace HexChain
 {
     class Program
     {
-        public static ConcurrentBag<BlockChain> _cb = new ConcurrentBag<BlockChain>();
+        public static ConcurrentBag<BlockChain> HexChains = new ConcurrentBag<BlockChain>();
+
+        /// <summary>
+        /// Tracks local messages send to the hexchain from the jinx client
+        /// </summary>
         public static ConcurrentQueue<string> JinxBuffer = new ConcurrentQueue<string>();
         public static ConcurrentQueue<string> JinxBufferFlag = new ConcurrentQueue<string>();
+
+        /// <summary>
+        /// Tracks global transaction placed on the hexchain
+        /// </summary>
         public static ConcurrentQueue<string> HexChainBuffer = new ConcurrentQueue<string>();
+
+        public static string PublicID;
+        public static string LicenseKey;
+
+        public class LocalInterfaceServer
+        {
+            string LocalHostEndpoint { get; set; }
+            string LocalClientBinding { get; set; }
+            ServiceHost svchost;
+
+            public LocalInterfaceServer(string localHostEndpoint, string localClientBinding)
+            {
+                this.LocalClientBinding = localClientBinding;
+                this.LocalHostEndpoint =  localHostEndpoint;
+                
+            }
+
+            public void Create()
+            {
+                this.svchost = new ServiceHost(typeof(JinxService));
+                try
+                {
+                    var jx = LocalHostEndpoint;
+                    var jxtcp = LocalHostEndpoint.Replace("http", "net.tcp");
+                    if (LocalClientBinding != "tcp")
+                    {
+                        this.svchost.AddServiceEndpoint("IJinxService", 
+                            new BasicHttpBinding(), jx);
+                    }
+                    else
+                    {
+                        this.svchost.AddServiceEndpoint("IJinxService", 
+                            new NetTcpBinding(SecurityMode.None, false), jxtcp);
+                    }
+                }
+                catch (Exception eX)
+                {
+                    this.svchost = null;
+                    throw new ArgumentException("Jinx Host Service can not be started \n\nError Message [" + eX.Message + "]");
+                }
+                if (this.svchost == null)
+                {
+                    throw new ArgumentException("Jinx Host Service could not be established");
+                }
+
+            }
+
+            public void Open()
+            {
+                this.svchost.Open();
+                Console.WriteLine("Jinx Host Service Listening. {0}.", LocalHostEndpoint);
+            }
+            public void Close()
+            {
+               this.svchost.Close();
+               this.svchost = null;
+               Console.WriteLine("Jinx Host Service stopped.");
+            }
+
+            
+        }
+        public enum BroadcastMode
+        {
+            Send,
+            SendValidBlock,
+            Discovery
+        }
+
+        public class GlobalInterfaceServer
+        {
+            WebServiceHost svchost;
+            string LocalHostEndpoint { get; set; }
+            List<string> peers;
+
+            public GlobalInterfaceServer(string localHostEndpoint, List<string> peers)
+            {
+                this.LocalHostEndpoint = localHostEndpoint;
+                this.peers = peers;
+            }
+
+            public void Create()
+            {
+                this.svchost = new WebServiceHost(typeof(HexChainService), new Uri(LocalHostEndpoint));
+                ServiceEndpoint ep = svchost.AddServiceEndpoint(typeof(IHexChainService), new WebHttpBinding(), "");
+                ServiceDebugBehavior sdb = svchost.Description.Behaviors.Find<ServiceDebugBehavior>();
+                sdb.HttpHelpPageEnabled = false;
+            }
+
+            public void Open()
+            {
+                svchost.Open();
+                Console.WriteLine("HexChain WebService is Running. {0}", LocalHostEndpoint);
+            }
+
+            public void Close()
+            {
+                this.svchost.Close();
+                Console.WriteLine("HexChain WebService has Stopped. {0}", LocalHostEndpoint);
+
+            }
+
+            public void Discovery()
+            {
+
+                Broadcast("searching", BroadcastMode.Discovery);
+
+            }
+
+            public void Broadcast(string message,BroadcastMode mode)
+            {
+                var msg = Encrypt.EncryptString(message, LicenseKey);
+               
+                var peers_Unreachable = new List<string>();
+                foreach (var peer in this.peers)
+                {
+                    try
+                    {
+                        using (var cf = new ChannelFactory<IHexChainService>
+                            (new WebHttpBinding(), peer))
+                        {
+                            cf.Endpoint.Behaviors.Add(new WebHttpBehavior());
+                            IHexChainService channel = cf.CreateChannel();
+                            switch (mode)
+                            {
+                                case BroadcastMode.Send:
+                                    channel.Send(msg);break;
+                                case BroadcastMode.SendValidBlock:
+                                    channel.SendValidBlock(msg); break;
+                                case BroadcastMode.Discovery:
+                                    var id = channel.Discover(msg);
+                                    Console.WriteLine("Found : {0} at {1}", id, peer);
+                                    break;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Console.WriteLine(ex.Message);
+                        if (mode == BroadcastMode.Discovery)
+                        {
+                            peers_Unreachable.Add(peer);
+                        }
+                        Console.WriteLine("Not Reachable : {0}", peer);
+                    }
+                }
+
+                foreach(var peer in peers_Unreachable)
+                {
+                    this.peers.Remove(peer);
+                }
+            }
+        }
 
         static void Main(string[] args)
         {
             try
             {
+                PublicID = "ID[" + Guid.NewGuid() + "]";
                 var appSettings = System.Configuration.ConfigurationManager.AppSettings;
+                LicenseKey = appSettings["License"];
+                var localHost = appSettings["Host"];
+                var peers = new List<string>();
+                //get all the peers to broadcast from appsettings keys
+                appSettings.AllKeys.ToList().Where(k => k.StartsWith("Peer"))
+                    .ToList().ForEach(delegate (string key) { peers.Add(appSettings[key]); });
 
-                var hostNodes = new List<string>();
-                appSettings.AllKeys.ToList().ForEach(delegate (string k) { if (k.StartsWith("Host")) { hostNodes.Add(appSettings[k]); } });
-
-                //strat multiple clients for debugging
-                var thisHostEndpoint = hostNodes[0];
-              
-                //if (hostNodes.Count > 0)
-                //{
-                //    //use default host
-                //    foreach (var host in hostNodes)
-                //    {
-                //        if (host != thisHostEndpoint)
-                //            ProgramInstances(host);
-                //    }
-                //}
-
-
-                ServiceHost uxSvcHost = new ServiceHost(typeof(JinxService));
-
-                try
-                {
-
-                    var jx = thisHostEndpoint.Replace("HexChainService", "JinxService");
-
-                    uxSvcHost.AddServiceEndpoint("IJinxService",new BasicHttpBinding(), jx);
-
-                    //uxSvcHost.AddServiceEndpoint("IJinxService", new NetTcpBinding(SecurityMode.None, false),jx.Replace("http", "net.tcp"));
-
-                    uxSvcHost.Open();
-
-                    Console.WriteLine("Jinx Service started. {0} \nWaiting for Input.", jx);
-                }
-                catch (Exception eX)
-                {
-                    uxSvcHost = null;
-                    throw new ArgumentException("Host Service can not be started \n\nError Message [" + eX.Message + "]");
-                }
-                if (uxSvcHost == null)
-                {
-                    throw new ArgumentException("svchost could not be established");
-                }
-
+                //Create servers for local comms, and global comms
+                var hexHost = new GlobalInterfaceServer(localHost,peers);
+                //use same local host endpoint for jinx host endpoint
+                var jinxHost = new LocalInterfaceServer(
+                    localHost.Replace("HexChainService", "JinxService"),
+                    appSettings["clientBinding"]);
                 
-                new Program().Run(thisHostEndpoint);
-                
-                
-                uxSvcHost.Close();
-                uxSvcHost = null;
-                Console.WriteLine("Jinx Service stopped.");
+                //Start the local interface web service (SOAP)
+                jinxHost.Create();
+                jinxHost.Open();
 
+                //Start the global interface web service (REST)
+                hexHost.Create();
+                hexHost.Open();
+
+                Console.WriteLine("Press any key to start discovery of peers...");
+                Console.ReadLine();
+                hexHost.Discovery();
+
+
+                //create a new hexchain and add to 
+                //hexchains concurrent list
+                var hexchain = new BlockChain();
+                hexchain.difficulty = 2;
+                HexChains.Add(hexchain);
+                
+                //do work handling input from jinx client
+                //process any global values coming in
+                while (true)
+                {
+                    //read from the hexchain any global messages
+                    string transm;
+                    var newTrans = HexChainBuffer.TryDequeue(out transm);
+                    if (newTrans)
+                    {
+
+                        //send this transaction to all the other nodes
+                        //hexHost.Broadcast(transm, BroadcastMode.Send);
+
+                        var trans = JsonConvert.DeserializeObject<Transaction>(transm);
+
+                        //try to mine the block with the transaction
+                        //and add it to the blockchain
+                        HexChains.First().addBlock(trans);
+
+                        var block = HexChains.First().getLatestBlock();
+
+                        //check if the block added was valid
+                        if (HexChains.First().IsChainValid())
+                        {
+                          
+                            //broadcast the block so everyone can mine it
+                            var jsonBlock = JsonConvert.SerializeObject(block, Formatting.Indented);
+                            
+                            //give all the peers a valid block
+                            hexHost.Broadcast(jsonBlock, BroadcastMode.SendValidBlock);
+                            Console.WriteLine("Valid Block Added :\n\t{0}", block.hash);
+                        }
+                        else
+                        {
+                            HexChains.First().chain.RemoveAt(HexChains.First().chain.Count);
+                            Console.WriteLine("Invalid Block Rejected :\n\t{0}", block.hash);
+                        }
+                    }
+                }
+
+                hexHost.Close();
+                jinxHost.Close();
+                
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
-
-
-            Console.WriteLine("Node has shutdown.");
+            
+            Console.WriteLine("HexChain Node has shutdown.");
             Console.Read();
         }
-
         
-        private static void ProgramInstances(string host)
-        {
-            
-            if (Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Count() <= 1)
-            {
-                
-                    Process.Start("HexChain.exe",host);                
-            }
-        }
-
-        public void Run(string hostEndpoint)
-        {
-            var PublicKey = "ID[" + Guid.NewGuid() + "]";
-            
-            WebServiceHost host = new WebServiceHost(typeof(HexChainService), new Uri(hostEndpoint));
-            ServiceEndpoint ep = host.AddServiceEndpoint(typeof(IHexChainService), new WebHttpBinding(), "");
-            ServiceDebugBehavior sdb = host.Description.Behaviors.Find<ServiceDebugBehavior>();
-            sdb.HttpHelpPageEnabled = false;
-            host.Open();
-            Console.WriteLine("HexChain Service is running at {0}",hostEndpoint);
-            
-            var jinx = new BlockChain();
-            jinx.difficulty = 2;
-            _cb.Add(jinx);
-
-            //clients to broadcast data too
-            var appSettings = System.Configuration.ConfigurationManager.AppSettings;
-            var peerNodes = new List<string>();
-            appSettings.AllKeys.ToList().ForEach(delegate (string k) { if (k.StartsWith("Peer")) { peerNodes.Add(appSettings[k]); } });
-            
-            while (true)
-            {
-                //read from the local jinx client buffer
-                string msg;
-                var newMsg = JinxBuffer.TryDequeue(out msg);
-                if (newMsg) {
-                    //process the local clients message as a new transaction
-                    ProcessMsg(PublicKey, peerNodes, msg);
-                }
-
-                //read from the hexchain any global messages
-                string trans;
-                var newTrans = HexChainBuffer.TryDequeue(out trans);
-                if (newTrans)
-                {
-                    ProcessTransaction(PublicKey, peerNodes, trans);
-                }
-                
-
-            }
-
-            host.Close();
-
-        }
-
-        private static void ProcessTransaction(string PublicKey, List<string> peerNodes, string msg)
-        {
-
-            var trans = JsonConvert.DeserializeObject<Transaction>(msg);
-            
-            //try to mine the block and add it to the blockchain
-            var testChain = _cb.ToArray()[0];
-
-            testChain.addBlock(trans);
-            var block = testChain.getLatestBlock();
-
-            //check if the block added was valid
-            if (testChain.IsChainValid())
-            {
-
-                _cb.ToArray()[0].chain.Add(block);
-                //broadcast the block so everyone can mine it
-                var jsonBlock = JsonConvert.SerializeObject(block, Formatting.Indented);
-                //give all the peers the transaction to mine it
-                BroadcastValidBlock(peerNodes, jsonBlock);
-            }
-        }
-
-        private static void ProcessMsg(string PublicKey, List<string> peerNodes, string msg)
-        {
-
-            //start working on new message transaction
-            Program.JinxBufferFlag.Enqueue("startflag");
-
-            //build a block for the new transaction
-            var trans =
-                new Transaction()
-                {
-                    public_key = PublicKey,
-                    data = "val:" + msg
-                };
-
-
-            Program.HexChainBuffer.Enqueue(JsonConvert.SerializeObject(trans));
-
-            //give all the peers the transaction to mine it
-            Broadcast(peerNodes, JsonConvert.SerializeObject(trans));
-
-            var flag = "";
-            Program.JinxBufferFlag.TryDequeue(out flag);
-        }
-    
-
-        private static void Broadcast(List<string> peerNodes, string msg)
-        {
-            foreach (var peer in peerNodes)
-            {
-                try
-                {
-                    using (ChannelFactory<IHexChainService> cf =
-                      new ChannelFactory<IHexChainService>(
-                          new WebHttpBinding(), peer))
-                    {
-                        cf.Endpoint.Behaviors.Add(new WebHttpBehavior());
-
-                        IHexChainService channel = cf.CreateChannel();
-
-                        //Console.WriteLine("BroadCasting to {0}", peer);
-                        //broadcasting a transaction to be mined by all the nodes
-                        var s = channel.Send(msg);
-
-                        //Console.WriteLine("Response Output:{0}", s);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("\t Not Reachable : {0}", peer);
-                    // Console.WriteLine(ex.Message);
-                }
-            }
-        }
-        private static void BroadcastValidBlock(List<string> peerNodes, string msg)
-        {
-            foreach (var peer in peerNodes)
-            {
-                try
-                {
-                    using (ChannelFactory<IHexChainService> cf =
-                      new ChannelFactory<IHexChainService>(
-                          new WebHttpBinding(), peer))
-                    {
-                        cf.Endpoint.Behaviors.Add(new WebHttpBehavior());
-
-                        IHexChainService channel = cf.CreateChannel();
-
-                        
-                        var s = channel.SendValidBlock(msg);
-
-                        //Console.WriteLine("Response Output:{0}", s);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("\t Not Reachable : {0}", peer);
-                    // Console.WriteLine(ex.Message);
-                }
-            }
-        }
-
+        
+      
     }
 }
 

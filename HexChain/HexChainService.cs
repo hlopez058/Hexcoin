@@ -3,6 +3,9 @@ using System.ServiceModel.Web;
 using Newtonsoft.Json;
 using System.Web.Hosting;
 using HexChain;
+using System.Security.Cryptography;
+using System.Linq;
+using System;
 
 [ServiceBehavior(
     InstanceContextMode = InstanceContextMode.Single,
@@ -12,23 +15,37 @@ public class HexChainService : IHexChainService
 {
     public string Send(string message)
     {
+        //decrypt the message
+        var msg = Encrypt.DecryptString(message,Program.LicenseKey);
+
         //recieve a transaction and create a block from it
-        HexChain.Program.HexChainBuffer.Enqueue(message);
+        HexChain.Program.HexChainBuffer.Enqueue(msg);
         
         return "received transaction";
     }
 
     public string SendValidBlock(string message)
     {
-        //recieve a block and try to validate it
-        //HexChain.Program.HexChainBuffer.Enqueue(message);
+        
+        var msg = Encrypt.DecryptString(message, Program.LicenseKey);
+
+        //client says this block is valid 
+        var proposed_block = JsonConvert.DeserializeObject<Block>(msg);
+
+        //does this block have a longer chain than the current chain
 
         //verify block is indeed a valid block
-        HexChain.Program._cb.ToArray()[0].chain.Add(JsonConvert.DeserializeObject<Block>(message));
 
         //add the block to the chain
 
+        HexChain.Program.HexChains.First().chain.Add(proposed_block);
+        Console.WriteLine("Valid Block Accepted \n{0}", proposed_block.hash);
         return "received block";
+    }
+
+    public string Discover(string message)
+    {
+        return Program.PublicID;
     }
 
 }
@@ -49,4 +66,11 @@ public interface IHexChainService
     BodyStyle = WebMessageBodyStyle.Wrapped,
     UriTemplate = "SendValidBlock/{message}")]
     string SendValidBlock(string message);
+
+    [OperationContract]
+    [WebInvoke(Method = "GET",
+    ResponseFormat = WebMessageFormat.Json,
+    BodyStyle = WebMessageBodyStyle.Wrapped,
+    UriTemplate = "Discover/{message}")]
+    string Discover(string message);
 }
