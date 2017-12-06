@@ -37,13 +37,13 @@ namespace HexChain
 
         public static string EncryptString(string plainText, string passPhrase)
         {
-            var cipherText = HttpUtility.UrlEncode(plainText);
+            var cipherText = plainText;//HttpUtility.UrlEncode(plainText);
             return cipherText;
         }
         public static string DecryptString(string cipherText, string passPhrase)
         {
-            var plainText = HttpUtility.UrlDecode(cipherText);
-            return plainText ;
+            var plainText = cipherText;// HttpUtility.UrlDecode(cipherText);
+            return plainText;
         }
 
         //Decrypt

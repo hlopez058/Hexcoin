@@ -54,10 +54,10 @@
   <ItemGroup>
     <Compile Include="BlockChain.cs" />
     <Compile Include="Encrypt.cs" />
+    <Compile Include="GlobalInterfaceServer.cs" />
     <Compile Include="HexChainService.cs" />
     <Compile Include="JinxService.cs" />
-    <Compile Include="Peer.cs" />
-    <Compile Include="PingImplementation.cs" />
+    <Compile Include="LocalInterfaceServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -8,8 +8,6 @@ public class JinxService : IJinxService
 {
     string IJinxService.Send(string message)
     {
-        //HexChain.Program.JinxBuffer.Enqueue(message);
-
         //build a block for the new transaction
         var trans =
             new Transaction()
@@ -20,8 +18,10 @@ public class JinxService : IJinxService
             };
 
         var transJson = JsonConvert.SerializeObject(trans);
-        Program.HexChainBuffer.Enqueue(transJson);
-        
+        Program.JinxBuffer.Enqueue(transJson);
+       // Program.HexChainBuffer.Enqueue(transJson);
+
+
         return message;
     }
 
