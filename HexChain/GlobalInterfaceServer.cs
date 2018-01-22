@@ -79,7 +79,6 @@ namespace HexChain
                     }
                     catch (Exception ex)
                     {
-                        // Console.WriteLine(ex.Message);
                         if (mode == BroadcastMode.Discovery)
                         {
                             peers_Unreachable.Add(peer);
